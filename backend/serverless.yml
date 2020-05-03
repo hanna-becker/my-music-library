@@ -8,8 +8,9 @@ plugins:
   - serverless-dynamodb-local
   - serverless-offline
 
-package:
-  individually: true
+# TODO: uncomment after everything else is finished
+#package:
+#  individually: true
 
 provider:
 
@@ -27,8 +28,23 @@ provider:
     TODOS_TABLE: Todos-${self:provider.stage}
     IMAGES_S3_BUCKET: serverless-todo-app-hanna-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
+    SPOTIFY_API_CLIENT_ID: 24cce64510b14bf3bdc2d68a0f834df8
+    SPOTIFY_API_CLIENT_SECRET_ID: SpotifySecret-${self:provider.stage}
+    SPOTIFY_API_CLIENT_SECRET_FIELD: spotifySecret
+    IS_OFFLINE: true
 
 custom:
+# TODO: uncomment for local execution
+  dynamodb:
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+    stages:
+      - dev
+  serverless-offline:
+    httpPort: 3003
+
   documentation:
     api:
       info:
@@ -168,6 +184,35 @@ functions:
         Resource:
           - '*'
 
+  SearchSong:
+    handler: src/lambda/http/searchSong.handler
+    events:
+      - http:
+          method: get
+          path: searchSong
+          cors: true
+          # TODO: enable auth
+#          authorizer: Auth
+          request:
+            parameters:
+              querystrings:
+                searchTerm: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - secretsmanager:GetSecretValue
+        Resource: !Ref SpotifySecret
+      - Effect: Allow
+        Action:
+          - kms:Decrypt
+        Resource: !GetAtt KMSKey.Arn
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
+        Resource:
+          - '*'
+
 resources:
   Resources:
     GatewayResponseDefault4XX:
@@ -225,3 +270,38 @@ resources:
               Action: 's3:GetObject'
               Resource: 'arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*'
         Bucket: !Ref AttachmentsBucket
+
+    KMSKey:
+      Type: AWS::KMS::Key
+      Properties:
+        Description: KMS key to encrypt Spotify secret
+        KeyPolicy:
+          Version: '2012-10-17'
+          Id: key-default-1
+          Statement:
+            - Sid: Allow administration of the key
+              Effect: Allow
+              Principal:
+                AWS:
+                  Fn::Join:
+                    - ':'
+                    - - 'arn:aws:iam:'
+                      - Ref: AWS::AccountId
+                      - 'root'
+              Action:
+                - 'kms:*'
+              Resource: '*'
+
+    KMSKeyAlias:
+      Type: AWS::KMS::Alias
+      Properties:
+        AliasName: alias/spotifyKey-${self:provider.stage}
+        TargetKeyId: !Ref KMSKey
+
+    SpotifySecret:
+      Type: AWS::SecretsManager::Secret
+      Properties:
+        Name: ${self:provider.environment.SPOTIFY_API_CLIENT_SECRET_ID}
+        Description: Spotify secret
+        KmsKeyId: !Ref KMSKey
+
