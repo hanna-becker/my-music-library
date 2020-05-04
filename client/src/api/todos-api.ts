@@ -3,6 +3,7 @@ import { Todo } from '../types/Todo'
 import { CreateTodoRequest } from '../types/CreateTodoRequest'
 import Axios from 'axios'
 import { UpdateTodoRequest } from '../types/UpdateTodoRequest'
+import { SearchResult } from '../types/SearchResult'
 
 export async function getTodos(idToken: string): Promise<Todo[]> {
   console.log('Fetching todos')
@@ -30,7 +31,7 @@ export async function createTodo(
   return response.data.item
 }
 
-export async function searchSong(idToken: string, searchTerm: string): Promise<any[]> {
+export async function searchSong(idToken: string, searchTerm: string): Promise<SearchResult[]> {
   console.log('Searching for songs')
 
   const response = await Axios.get(`${apiEndpoint}/searchSong?searchTerm=${searchTerm}`, {

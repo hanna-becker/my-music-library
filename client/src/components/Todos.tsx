@@ -7,6 +7,7 @@ import { Button, Checkbox, Divider, Grid, Header, Icon, Image, Input, Loader } f
 import { createTodo, deleteTodo, getTodos, patchTodo, searchSong } from '../api/todos-api'
 import Auth from '../auth/Auth'
 import { Todo } from '../types/Todo'
+import { SearchResult } from '../types/SearchResult'
 
 interface TodosProps {
   auth: Auth
@@ -15,7 +16,7 @@ interface TodosProps {
 
 interface TodosState {
   todos: Todo[]
-  searchResults: any[] // TODO: add type
+  searchResults: SearchResult[]
   newTodoName: string
   searchTerm: string
   loadingTodos: boolean
@@ -124,7 +125,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
             <Grid.Column width={8}>
               <Header as="h1">Song Search</Header>
               {this.renderSearchInput()}
-              {this.renderTodos()}
+              {this.renderSearchResults()}
             </Grid.Column>
           </Grid.Row>
         </Grid>
@@ -190,6 +191,15 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     return this.renderTodosList()
   }
 
+  renderSearchResults() {
+    if (this.state.loadingTodos) {
+      // TODO: loading state
+      return this.renderLoading()
+    }
+
+    return this.renderSearchResultsList()
+  }
+
   renderLoading() {
     return (
       <Grid.Row>
@@ -238,6 +248,55 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
               </Grid.Column>
               {todo.attachmentUrl && (
                 <Image src={todo.attachmentUrl} size="small" wrapped/>
+              )}
+              <Grid.Column width={16}>
+                <Divider/>
+              </Grid.Column>
+            </Grid.Row>
+          )
+        })}
+      </Grid>
+    )
+  }
+
+  renderSearchResultsList() {
+    return (
+      <Grid padded>
+        {this.state.searchResults.map((searchResult, pos) => {
+          return (
+            <Grid.Row>
+              <Grid.Column width={1} verticalAlign="middle">
+                <Checkbox
+                  onChange={() => this.onTodoCheck(pos)}
+                  checked={false}
+                />
+              </Grid.Column>
+              <Grid.Column width={10} verticalAlign="middle">
+                {searchResult.name}
+              </Grid.Column>
+              <Grid.Column width={3} floated="right">
+                {searchResult.artists}
+              </Grid.Column>
+              <Grid.Column width={1} floated="right">
+                <Button
+                  icon
+                  color="blue"
+                  onClick={() => {}}
+                >
+                  <Icon name="pencil"/>
+                </Button>
+              </Grid.Column>
+              <Grid.Column width={1} floated="right">
+                <Button
+                  icon
+                  color="red"
+                  onClick={() => {}}
+                >
+                  <Icon name="delete"/>
+                </Button>
+              </Grid.Column>
+              {searchResult.imageUrl && (
+                <Image src={searchResult.imageUrl} size="small" wrapped/>
               )}
               <Grid.Column width={16}>
                 <Divider/>
