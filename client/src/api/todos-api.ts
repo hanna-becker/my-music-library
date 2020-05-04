@@ -1,8 +1,8 @@
 import { apiEndpoint } from '../config'
-import { Todo } from '../types/Todo';
-import { CreateTodoRequest } from '../types/CreateTodoRequest';
+import { Todo } from '../types/Todo'
+import { CreateTodoRequest } from '../types/CreateTodoRequest'
 import Axios from 'axios'
-import { UpdateTodoRequest } from '../types/UpdateTodoRequest';
+import { UpdateTodoRequest } from '../types/UpdateTodoRequest'
 
 export async function getTodos(idToken: string): Promise<Todo[]> {
   console.log('Fetching todos')
@@ -11,7 +11,7 @@ export async function getTodos(idToken: string): Promise<Todo[]> {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`
-    },
+    }
   })
   console.log('Todos:', response.data)
   return response.data.items
@@ -21,13 +21,26 @@ export async function createTodo(
   idToken: string,
   newTodo: CreateTodoRequest
 ): Promise<Todo> {
-  const response = await Axios.post(`${apiEndpoint}/todos`,  JSON.stringify(newTodo), {
+  const response = await Axios.post(`${apiEndpoint}/todos`, JSON.stringify(newTodo), {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`
     }
   })
   return response.data.item
+}
+
+export async function searchSong(idToken: string, searchTerm: string): Promise<any[]> {
+  console.log('Searching for songs')
+
+  const response = await Axios.get(`${apiEndpoint}/searchSong?searchTerm=${searchTerm}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    }
+  })
+  console.log('Search results:', response.data)
+  return response.data
 }
 
 export async function patchTodo(

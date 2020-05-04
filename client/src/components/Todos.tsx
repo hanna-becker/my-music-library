@@ -2,19 +2,9 @@ import dateFormat from 'dateformat'
 import { History } from 'history'
 import update from 'immutability-helper'
 import * as React from 'react'
-import {
-  Button,
-  Checkbox,
-  Divider,
-  Grid,
-  Header,
-  Icon,
-  Input,
-  Image,
-  Loader
-} from 'semantic-ui-react'
+import { Button, Checkbox, Divider, Grid, Header, Icon, Image, Input, Loader } from 'semantic-ui-react'
 
-import { createTodo, deleteTodo, getTodos, patchTodo } from '../api/todos-api'
+import { createTodo, deleteTodo, getTodos, patchTodo, searchSong } from '../api/todos-api'
 import Auth from '../auth/Auth'
 import { Todo } from '../types/Todo'
 
@@ -25,19 +15,28 @@ interface TodosProps {
 
 interface TodosState {
   todos: Todo[]
+  searchResults: any[] // TODO: add type
   newTodoName: string
+  searchTerm: string
   loadingTodos: boolean
 }
+
 
 export class Todos extends React.PureComponent<TodosProps, TodosState> {
   state: TodosState = {
     todos: [],
+    searchResults: [],
     newTodoName: '',
+    searchTerm: '',
     loadingTodos: true
   }
 
   handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ newTodoName: event.target.value })
+  }
+
+  handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ searchTerm: event.target.value })
   }
 
   onEditButtonClick = (todoId: string) => {
@@ -57,6 +56,17 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
       })
     } catch {
       alert('Todo creation failed')
+    }
+  }
+
+  onSubmitSearch = async (event: React.ChangeEvent<HTMLButtonElement>) => {
+    try {
+      const searchResults = await searchSong(this.props.auth.getIdToken(), this.state.searchTerm)
+      this.setState({
+        searchResults
+      })
+    } catch {
+      alert('Song search failed')
     }
   }
 
@@ -113,7 +123,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
             </Grid.Column>
             <Grid.Column width={8}>
               <Header as="h1">Song Search</Header>
-              {this.renderCreateTodoInput()}
+              {this.renderSearchInput()}
               {this.renderTodos()}
             </Grid.Column>
           </Grid.Row>
@@ -138,6 +148,31 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
             actionPosition="left"
             placeholder="To change the world..."
             onChange={this.handleNameChange}
+          />
+        </Grid.Column>
+        <Grid.Column width={16}>
+          <Divider/>
+        </Grid.Column>
+      </Grid.Row>
+    )
+  }
+
+  renderSearchInput() {
+    return (
+      <Grid.Row>
+        <Grid.Column width={16}>
+          <Input
+            action={{
+              color: 'teal',
+              labelPosition: 'left',
+              icon: 'add',
+              content: 'Search',
+              onClick: this.onSubmitSearch
+            }}
+            fluid
+            actionPosition="left"
+            placeholder="I'm singing in the rain..."
+            onChange={this.handleSearchInputChange}
           />
         </Grid.Column>
         <Grid.Column width={16}>

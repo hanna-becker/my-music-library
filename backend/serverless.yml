@@ -64,7 +64,7 @@ functions:
           method: get
           path: todos
           cors: true
-          authorizer: Auth
+#          authorizer: Auth
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -191,8 +191,7 @@ functions:
           method: get
           path: searchSong
           cors: true
-          # TODO: enable auth
-#          authorizer: Auth
+          authorizer: Auth
           request:
             parameters:
               querystrings:
