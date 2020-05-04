@@ -104,11 +104,20 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   render() {
     return (
       <div>
-        <Header as="h1">TODOs</Header>
-
-        {this.renderCreateTodoInput()}
-
-        {this.renderTodos()}
+        <Grid>
+          <Grid.Row>
+            <Grid.Column width={8}>
+              <Header as="h1">My Music</Header>
+              {this.renderCreateTodoInput()}
+              {this.renderTodos()}
+            </Grid.Column>
+            <Grid.Column width={8}>
+              <Header as="h1">Song Search</Header>
+              {this.renderCreateTodoInput()}
+              {this.renderTodos()}
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
       </div>
     )
   }
@@ -132,7 +141,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
           />
         </Grid.Column>
         <Grid.Column width={16}>
-          <Divider />
+          <Divider/>
         </Grid.Column>
       </Grid.Row>
     )
@@ -180,7 +189,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
                   color="blue"
                   onClick={() => this.onEditButtonClick(todo.todoId)}
                 >
-                  <Icon name="pencil" />
+                  <Icon name="pencil"/>
                 </Button>
               </Grid.Column>
               <Grid.Column width={1} floated="right">
@@ -189,14 +198,14 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
                   color="red"
                   onClick={() => this.onTodoDelete(todo.todoId)}
                 >
-                  <Icon name="delete" />
+                  <Icon name="delete"/>
                 </Button>
               </Grid.Column>
               {todo.attachmentUrl && (
-                <Image src={todo.attachmentUrl} size="small" wrapped />
+                <Image src={todo.attachmentUrl} size="small" wrapped/>
               )}
               <Grid.Column width={16}>
-                <Divider />
+                <Divider/>
               </Grid.Column>
             </Grid.Row>
           )
