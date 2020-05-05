@@ -73,7 +73,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     }
   }
 
-  onTrackDelete = async (trackId: string) => {
+  onSongDelete = async (trackId: string) => {
     // TODO: implement
     // try {
     //   await deleteTodo(this.props.auth.getIdToken(), trackId)
@@ -174,7 +174,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
       return this.renderLoading()
     }
 
-    return this.renderTracksList()
+    return this.renderSongsList()
   }
 
   renderSearchResults() {
@@ -196,18 +196,18 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     )
   }
 
-  renderTracksList() {
+  renderSongsList() {
     return (
       <Grid padded>
         {this.state.trackIds.map((trackId, pos) => {
-          const trackPath = `https://open.spotify.com/embed/track/${trackId}`
+          const songPath = `https://open.spotify.com/embed/track/${trackId}`
           return (
             <Grid.Row key={trackId}>
               <Grid.Column width={14} verticalAlign="middle">
-                <iframe src={trackPath} width="300" height="80" frameBorder="0" allow="encrypted-media"/>
+                <iframe src={songPath} width="300" height="80" frameBorder="0" allow="encrypted-media"/>
               </Grid.Column>
               <Grid.Column width={2} floated="right">
-                <Button icon color="red" onClick={() => this.onTrackDelete(trackId)}>
+                <Button icon color="red" onClick={() => this.onSongDelete(trackId)}>
                   <Icon name="delete"/>
                 </Button>
               </Grid.Column>

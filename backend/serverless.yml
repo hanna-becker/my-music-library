@@ -26,6 +26,7 @@ provider:
 
   environment:
     TODOS_TABLE: Todos-${self:provider.stage}
+    SONGS_TABLE: Songs-${self:provider.stage}
     IMAGES_S3_BUCKET: serverless-todo-app-hanna-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
     SPOTIFY_API_CLIENT_ID: 24cce64510b14bf3bdc2d68a0f834df8
@@ -64,7 +65,7 @@ functions:
           method: get
           path: todos
           cors: true
-#          authorizer: Auth
+          authorizer: Auth
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -74,6 +75,26 @@ functions:
         Action:
           - s3:GetObject
         Resource: arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
+        Resource:
+          - '*'
+
+  GetSongs:
+    handler: src/lambda/http/getSongs.handler
+    events:
+      - http:
+          method: get
+          path: songs
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.SONGS_TABLE}
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
@@ -107,6 +128,32 @@ functions:
         Resource:
           - '*'
 
+  AddSong:
+    handler: src/lambda/http/addSong.handler
+    events:
+      - http:
+          method: post
+          path: songs
+          cors: true
+          authorizer: Auth
+#          request:
+#            schema:
+#              application/json: ${file(src/requests/create-todo-request.json)}
+          documentation:
+            summary: Add a song to personal music library
+            description: Add a song to personal music library
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.SONGS_TABLE}
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
+        Resource:
+          - '*'
+          -
   UpdateTodo:
     handler: src/lambda/http/updateTodo.handler
     events:
@@ -240,6 +287,22 @@ resources:
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODOS_TABLE}
+
+    SongsDynamoDBTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: trackId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: trackId
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.SONGS_TABLE}
 
     AttachmentsBucket:
       Type: AWS::S3::Bucket
