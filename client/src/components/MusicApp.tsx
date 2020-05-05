@@ -5,6 +5,7 @@ import { addSong, deleteSong, getSongs, searchSong } from '../api/songs-api'
 import Auth from '../auth/Auth'
 import { SearchResult } from '../types/SearchResult'
 import { AddableSearchResult } from '../types/AddableSearchResult'
+import { LibrarySong } from '../types/LibrarySong'
 
 interface MusicAppProps {
   auth: Auth
@@ -15,6 +16,7 @@ interface MusicAppState {
   searchResults: SearchResult[]
   addableSearchResults: AddableSearchResult[]
   trackIds: Set<string>
+  librarySongs: Set<LibrarySong>
   searchTerm: string
   loadingSongs: boolean
   loadingSearchResults: boolean
@@ -25,6 +27,7 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
     searchResults: [],
     addableSearchResults: [],
     trackIds: new Set([]),
+    librarySongs: new Set([]),
     searchTerm: '',
     loadingSongs: true,
     loadingSearchResults: false
@@ -32,9 +35,10 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
 
   private setAddableSearchResultsState() {
     const addableSearchResults = this.state.searchResults.map(result => {
+      const trackIds = [...this.state.librarySongs].map(song => song.trackId)
       return {
         ...result,
-        addable: ![...this.state.trackIds].includes(result.id)
+        addable: !trackIds.includes(result.id)
       }
     })
     this.setState({
@@ -70,7 +74,8 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
     try {
       await deleteSong(this.props.auth.getIdToken(), trackId)
       this.setState({
-        trackIds: new Set([...this.state.trackIds].filter(id => id != trackId))
+        trackIds: new Set([...this.state.trackIds].filter(id => id != trackId)),
+        librarySongs: new Set([...this.state.librarySongs].filter(song => song.trackId != trackId))
       })
       this.setAddableSearchResultsState()
     } catch {
@@ -81,8 +86,10 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
   onSongAdd = async (trackId: string) => {
     try {
       const newTrackId: string = await addSong(this.props.auth.getIdToken(), trackId)
+      const librarySongs = new Set([...this.state.librarySongs, { trackId, iframeLoaded: false }])
       this.setState({
-        trackIds: new Set([...this.state.trackIds, newTrackId])
+        trackIds: new Set([...this.state.trackIds, newTrackId]),
+        librarySongs
       })
       this.setAddableSearchResultsState()
     } catch {
@@ -93,10 +100,10 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
   async componentDidMount() {
     try {
       const trackIds = await getSongs(this.props.auth.getIdToken())
+      const librarySongs = new Set(trackIds.map(trackId => ({ trackId, iframeLoaded: false })))
       this.setState({
         trackIds: new Set(trackIds),
-        // TODO: wait for iframes to finish loading before setting this
-        loadingSongs: false
+        librarySongs
       })
     } catch (e) {
       alert(`Failed to fetch songs: ${e.message}`)
@@ -110,7 +117,8 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
           <Grid.Row>
             <Grid.Column width={8}>
               <Header as="h1">My Music</Header>
-              {this.renderSongs()}
+              {this.state.loadingSongs ? this.renderLoadingSongs() : null}
+              {this.renderSongsList()}
             </Grid.Column>
             <Grid.Column width={8}>
               <Header as="h1">Song Search</Header>
@@ -149,14 +157,6 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
     )
   }
 
-  renderSongs() {
-    if (this.state.loadingSongs) {
-      return this.renderLoadingSongs()
-    }
-
-    return this.renderSongsList()
-  }
-
   renderSearchResults() {
     if (this.state.loadingSearchResults) {
       return this.renderLoadingSearchResults()
@@ -185,28 +185,35 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
     )
   }
 
+
   renderSongsList() {
     return (
       <Grid padded>
-        {[...this.state.trackIds].map((trackId) => {
-          const songPath = `https://open.spotify.com/embed/track/${trackId}`
-          return (
-            <Grid.Row key={trackId}>
-              <Grid.Column width={14} verticalAlign="middle">
-                <iframe src={songPath} width="300" height="80" frameBorder="0" allow="encrypted-media"/>
-              </Grid.Column>
-              <Grid.Column width={2} floated="right">
-                <Button icon color="red" onClick={() => this.onSongDelete(trackId)}>
-                  <Icon name="delete"/>
-                </Button>
-              </Grid.Column>
-              <Grid.Column width={16}>
-                <Divider/>
-              </Grid.Column>
-            </Grid.Row>
-          )
+        {[...this.state.librarySongs].map((song) => {
+          return this.renderSong(song)
         })}
       </Grid>
+    )
+  }
+
+  renderSong(song: LibrarySong) {
+    const songPath = `https://open.spotify.com/embed/track/${song.trackId}`
+    const iframe = <iframe src={songPath} width="300" height="80" onLoad={() => this.onIframeLoaded(song.trackId)}
+                           allow="encrypted-media"/>
+    return (
+      <Grid.Row key={song.trackId}>
+        <Grid.Column width={14} verticalAlign="middle">
+          {iframe}
+        </Grid.Column>
+        <Grid.Column width={2} floated="right">
+          <Button icon color="red" onClick={() => this.onSongDelete(song.trackId)}>
+            <Icon name="delete"/>
+          </Button>
+        </Grid.Column>
+        <Grid.Column width={16}>
+          <Divider/>
+        </Grid.Column>
+      </Grid.Row>
     )
   }
 
@@ -242,6 +249,24 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
         })}
       </Grid>
     )
+  }
+
+  private onIframeLoaded(trackId: string) {
+    const librarySongs = [...this.state.librarySongs]
+    const updatedLibrarySongs = librarySongs.map(song => {
+      let newSong = { ...song }
+      if (song.trackId === trackId) {
+        newSong.iframeLoaded = true
+      }
+      return newSong
+    })
+    this.setState({ librarySongs: new Set(updatedLibrarySongs) })
+    const iframesLoaded: boolean[] = updatedLibrarySongs.map(song => song.iframeLoaded)
+    const reducer = (accumulator: boolean, currentValue: boolean) => accumulator && currentValue
+    const allIframesLoaded: boolean = iframesLoaded.reduce(reducer, true)
+    this.setState({
+      loadingSongs: !allIframesLoaded
+    })
   }
 
 }
