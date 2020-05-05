@@ -19,24 +19,16 @@ const client = new AWS.SecretsManager()
 
 let cachedSecret
 
+let timestampRetrieveAccessToken
+let spotifyApi: SpotifyWebApi
+let spotifyTokenCacheDurationSeconds = 0
+
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.info('event: ', event)
 
-  const secretObj: any = await getSecret()
-  const spotifyClientSecret: string = secretObj[spotifySecretField]
-
-  const spotifyApi = new SpotifyWebApi({
-    clientId: spotifyClientId,
-    clientSecret: spotifyClientSecret
-  })
+  await prepareSpotifyWebApiInstance()
 
   try {
-    // TODO: extract function
-    const clientCredResponse = await spotifyApi.clientCredentialsGrant()
-    spotifyApi.setAccessToken(clientCredResponse.body['access_token'])
-    // TODO: cache access token for ~ this much time
-    console.log(`The access token expires in ${clientCredResponse.body['expires_in']} seconds`)
-
     const searchTerm: string = event.queryStringParameters.searchTerm
     const searchResponse = await spotifyApi.searchTracks(searchTerm)
     const searchResults: SpotifyApi.SearchResponse = searchResponse.body
@@ -85,6 +77,29 @@ async function getSecret(): Promise<any> {
   cachedSecret = JSON.parse(data.SecretString)
 
   return cachedSecret
+}
+
+async function prepareSpotifyWebApiInstance(): Promise<void> {
+  if (!timestampRetrieveAccessToken || renewCachedToken()) {
+    logger.info('retrieving new access token for Spotify API')
+    const secretObj: any = await getSecret()
+    const spotifyClientSecret: string = secretObj[spotifySecretField]
+    spotifyApi = new SpotifyWebApi({
+      clientId: spotifyClientId,
+      clientSecret: spotifyClientSecret
+    })
+    timestampRetrieveAccessToken = Date.now()
+    const clientCredResponse = await spotifyApi.clientCredentialsGrant()
+    spotifyApi.setAccessToken(clientCredResponse.body['access_token'])
+    spotifyTokenCacheDurationSeconds = clientCredResponse.body['expires_in']
+    logger.info(`The access token expires in ${spotifyTokenCacheDurationSeconds} seconds`)
+  }
+}
+
+function renewCachedToken(): boolean {
+  const now = Date.now()
+  const timeDiffSeconds = Math.abs(now - timestampRetrieveAccessToken) / 1000
+  return timeDiffSeconds > 0.9 * spotifyTokenCacheDurationSeconds
 }
 
 const retrieveSmallestImageUrl = (images): string => {
