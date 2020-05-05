@@ -1,60 +1,34 @@
-import dateFormat from 'dateformat'
 import { History } from 'history'
 import * as React from 'react'
 import { Button, Divider, Grid, Header, Icon, Image, Input, Loader } from 'semantic-ui-react'
-import { addSong, createTodo, deleteSong, getSongs, getTodos, searchSong } from '../api/todos-api'
+import { addSong, deleteSong, getSongs, searchSong } from '../api/songs-api'
 import Auth from '../auth/Auth'
-import { Todo } from '../types/Todo'
 import { SearchResult } from '../types/SearchResult'
 
-interface TodosProps {
+interface MusicAppProps {
   auth: Auth
   history: History
 }
 
-interface TodosState {
-  todos: Todo[]
+interface MusicAppState {
   searchResults: SearchResult[]
   trackIds: string[]
-  newTodoName: string
   searchTerm: string
   loadingSongs: boolean
   loadingSearchResults: boolean
 }
 
-export class Todos extends React.PureComponent<TodosProps, TodosState> {
-  state: TodosState = {
-    todos: [],
+export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> {
+  state: MusicAppState = {
     searchResults: [],
     trackIds: [],
-    newTodoName: '',
     searchTerm: '',
     loadingSongs: true,
     loadingSearchResults: false
   }
 
-  handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ newTodoName: event.target.value })
-  }
-
   handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ searchTerm: event.target.value })
-  }
-
-  onTodoCreate = async (event: React.ChangeEvent<HTMLButtonElement>) => {
-    try {
-      const dueDate = this.calculateDueDate()
-      const newTodo = await createTodo(this.props.auth.getIdToken(), {
-        name: this.state.newTodoName,
-        dueDate
-      })
-      this.setState({
-        todos: [...this.state.todos, newTodo],
-        newTodoName: ''
-      })
-    } catch {
-      alert('Todo creation failed')
-    }
   }
 
   onSubmitSearch = async (event: React.ChangeEvent<HTMLButtonElement>) => {
@@ -83,7 +57,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
         trackIds: this.state.trackIds.filter(id => id != trackId)
       })
     } catch {
-      alert('Todo deletion failed')
+      alert('Song deletion failed')
     }
   }
 
@@ -103,6 +77,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
       const trackIds = await getSongs(this.props.auth.getIdToken())
       this.setState({
         trackIds,
+        // TODO: wait for iframes to finish loading before setting this
         loadingSongs: false
       })
     } catch (e) {
@@ -117,8 +92,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
           <Grid.Row>
             <Grid.Column width={8}>
               <Header as="h1">My Music</Header>
-              {this.renderCreateTodoInput()}
-              {this.renderTodos()}
+              {this.renderSongs()}
             </Grid.Column>
             <Grid.Column width={8}>
               <Header as="h1">Song Search</Header>
@@ -128,31 +102,6 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
           </Grid.Row>
         </Grid>
       </div>
-    )
-  }
-
-  renderCreateTodoInput() {
-    return (
-      <Grid.Row>
-        <Grid.Column width={16}>
-          <Input
-            action={{
-              color: 'teal',
-              labelPosition: 'left',
-              icon: 'add',
-              content: 'New task',
-              onClick: this.onTodoCreate
-            }}
-            fluid
-            actionPosition="left"
-            placeholder="To change the world..."
-            onChange={this.handleNameChange}
-          />
-        </Grid.Column>
-        <Grid.Column width={16}>
-          <Divider/>
-        </Grid.Column>
-      </Grid.Row>
     )
   }
 
@@ -182,7 +131,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     )
   }
 
-  renderTodos() {
+  renderSongs() {
     if (this.state.loadingSongs) {
       return this.renderLoadingSongs()
     }
@@ -221,7 +170,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   renderSongsList() {
     return (
       <Grid padded>
-        {this.state.trackIds.map((trackId, pos) => {
+        {this.state.trackIds.map((trackId) => {
           const songPath = `https://open.spotify.com/embed/track/${trackId}`
           return (
             <Grid.Row key={trackId}>
@@ -246,7 +195,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   renderSearchResultsList() {
     return (
       <Grid padded>
-        {this.state.searchResults.map((searchResult, pos) => {
+        {this.state.searchResults.map((searchResult) => {
           return (
             <Grid.Row key={searchResult.id}>
               <Grid.Column width={3} verticalAlign="middle">
@@ -276,10 +225,4 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     )
   }
 
-  calculateDueDate(): string {
-    const date = new Date()
-    date.setDate(date.getDate() + 7)
-
-    return dateFormat(date, 'yyyy-mm-dd') as string
-  }
 }
