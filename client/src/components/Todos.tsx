@@ -172,7 +172,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
             action={{
               color: 'teal',
               labelPosition: 'left',
-              icon: 'add',
+              icon: 'search',
               content: 'Search',
               onClick: this.onSubmitSearch
             }}
@@ -284,24 +284,14 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
               <Grid.Column width={3} verticalAlign="middle" floated="right">
                 {searchResult.duration}
               </Grid.Column>
-              <Grid.Column width={1} floated="right">
+              <Grid.Column width={2} floated="right">
                 <Button
                   icon
                   color="blue"
                   onClick={() => {
                   }}
                 >
-                  <Icon name="pencil"/>
-                </Button>
-              </Grid.Column>
-              <Grid.Column width={1} floated="right">
-                <Button
-                  icon
-                  color="red"
-                  onClick={() => {
-                  }}
-                >
-                  <Icon name="delete"/>
+                  <Icon name="add"/>
                 </Button>
               </Grid.Column>
               <Grid.Column width={16}>
