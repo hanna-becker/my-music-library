@@ -35,8 +35,11 @@ export default class App extends Component<AppProps, AppState> {
 
   render() {
     return (
-      <div>
-        <Segment style={{ padding: '8em 0em' }} vertical>
+      <div style={{
+        backgroundColor: 'darkslategrey',
+        height: '100%'
+      }}>
+        <Segment style={{ padding: '8em 0em', backgroundColor: 'darkslategrey', minHeight: '100% !important' }} vertical>
           <Grid container stackable verticalAlign="middle">
             <Grid.Row>
               <Grid.Column width={16}>

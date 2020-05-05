@@ -82,6 +82,7 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
 
   onSongAdd = async (trackId: string) => {
     try {
+      await addSong(this.props.auth.getIdToken(), trackId)
       const librarySongs = new Set([...this.state.librarySongs, { trackId, iframeLoaded: false }])
       this.setState({
         librarySongs
@@ -109,13 +110,12 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
       <div>
         <Grid>
           <Grid.Row>
-            <Grid.Column width={8}>
-              <Header as="h1">My Music</Header>
-              {this.state.loadingSongs ? this.renderLoadingSongs() : null}
-              {this.renderSongsList()}
+            <Grid.Column width={10}>
+              <Header as="h1">My Music Library</Header>
+              {this.state.loadingSongs ? this.renderLoadingLibrarySongs() : null}
+              {this.renderLibrarySongsList()}
             </Grid.Column>
-            <Grid.Column width={8}>
-              <Header as="h1">Song Search</Header>
+            <Grid.Column width={6}>
               {this.renderSearchInput()}
               {this.renderSearchResults()}
             </Grid.Column>
@@ -131,21 +131,23 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
         <Grid.Column width={16}>
           <Input
             action={{
-              color: 'teal',
+              color: 'green',
               labelPosition: 'left',
               icon: 'search',
-              content: 'Search',
+              content: 'Spotify',
               onClick: this.onSubmitSearch
             }}
             fluid
             actionPosition="left"
-            placeholder="I'm singing in the rain..."
+            placeholder="Search song"
             onChange={this.handleSearchInputChange}
             onKeyDown={this.handleKeyDown}
           />
         </Grid.Column>
         <Grid.Column width={16}>
-          <Divider/>
+          <div>
+            <Divider/>
+          </div>
         </Grid.Column>
       </Grid.Row>
     )
@@ -155,11 +157,10 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
     if (this.state.loadingSearchResults) {
       return this.renderLoadingSearchResults()
     }
-
     return this.renderSearchResultsList()
   }
 
-  renderLoadingSongs() {
+  renderLoadingLibrarySongs() {
     return (
       <Grid.Row>
         <Loader indeterminate active inline="centered">
@@ -179,35 +180,32 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
     )
   }
 
-
-  renderSongsList() {
+  renderLibrarySongsList() {
+    if ([...this.state.librarySongs].length === 0) {
+      this.setState({ loadingSongs: false })
+    }
     return (
       <Grid padded>
         {[...this.state.librarySongs].map((song) => {
-          return this.renderSong(song)
+          const songPath = `https://open.spotify.com/embed/track/${song.trackId}`
+          return (
+            <Grid.Column key={song.trackId} width={8}>
+              <Grid.Column width={16}>
+                <iframe src={songPath} width="300" height="80" style={{ marginLeft: '9px' }}
+                        onLoad={() => this.onIframeLoaded(song.trackId)}
+                        frameBorder="0" allow="encrypted-media"/>
+                <Button icon fluid attached='bottom' color="black" onClick={() => this.onSongDelete(song.trackId)}>
+                  <Icon name="delete"/>
+                  Remove from Library
+                </Button>
+              </Grid.Column>
+              <Grid.Column width={16}>
+                <Divider/>
+              </Grid.Column>
+            </Grid.Column>
+          )
         })}
       </Grid>
-    )
-  }
-
-  renderSong(song: LibrarySong) {
-    const songPath = `https://open.spotify.com/embed/track/${song.trackId}`
-    const iframe = <iframe src={songPath} width="300" height="80" onLoad={() => this.onIframeLoaded(song.trackId)}
-                           frameBorder="0" allow="encrypted-media"/>
-    return (
-      <Grid.Row key={song.trackId}>
-        <Grid.Column width={14} verticalAlign="middle">
-          {iframe}
-        </Grid.Column>
-        <Grid.Column width={2} floated="right">
-          <Button icon color="red" onClick={() => this.onSongDelete(song.trackId)}>
-            <Icon name="delete"/>
-          </Button>
-        </Grid.Column>
-        <Grid.Column width={16}>
-          <Divider/>
-        </Grid.Column>
-      </Grid.Row>
     )
   }
 
@@ -216,29 +214,31 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
       <Grid padded>
         {this.state.addableSearchResults.map((searchResult) => {
           return (
+
             <Grid.Row key={searchResult.id}>
-              <Grid.Column width={3} verticalAlign="middle">
+              <Grid.Column width={4} verticalAlign="middle">
                 {searchResult.imageUrl && (<Image src={searchResult.imageUrl} size="small" wrapped/>)}
               </Grid.Column>
-              <Grid.Column width={4} verticalAlign="middle">
-                {searchResult.artists}
-              </Grid.Column>
-              <Grid.Column width={4} verticalAlign="middle">
-                {searchResult.name}
-              </Grid.Column>
-              <Grid.Column width={3} verticalAlign="middle" floated="right">
-                {searchResult.duration}
+              <Grid.Column width={10} verticalAlign="middle">
+                <Grid.Column width={16}>
+                  <h4>{searchResult.name}</h4>
+                </Grid.Column>
+                <Grid.Column width={16}>
+                  {searchResult.artists}
+                </Grid.Column>
+                <Grid.Column width={16}>
+                  <em>{searchResult.duration}</em>
+                </Grid.Column>
               </Grid.Column>
               <Grid.Column width={2} floated="right">
-                <Button icon color="blue" disabled={!searchResult.addable}
-                        onClick={() => this.onSongAdd(searchResult.id)}>
-                  <Icon name="add"/>
-                </Button>
+                <Button circular color='green' icon='add' disabled={!searchResult.addable}
+                        onClick={() => this.onSongAdd(searchResult.id)}/>
               </Grid.Column>
               <Grid.Column width={16}>
                 <Divider/>
               </Grid.Column>
             </Grid.Row>
+
           )
         })}
       </Grid>
