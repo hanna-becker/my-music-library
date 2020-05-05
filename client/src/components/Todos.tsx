@@ -2,7 +2,7 @@ import dateFormat from 'dateformat'
 import { History } from 'history'
 import * as React from 'react'
 import { Button, Divider, Grid, Header, Icon, Image, Input, Loader } from 'semantic-ui-react'
-import { addSong, createTodo, deleteSong, getTodos, searchSong } from '../api/todos-api'
+import { addSong, createTodo, deleteSong, getSongs, getTodos, searchSong } from '../api/todos-api'
 import Auth from '../auth/Auth'
 import { Todo } from '../types/Todo'
 import { SearchResult } from '../types/SearchResult'
@@ -97,9 +97,9 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
 
   async componentDidMount() {
     try {
-      const todos = await getTodos(this.props.auth.getIdToken())
+      const trackIds = await getSongs(this.props.auth.getIdToken())
       this.setState({
-        todos,
+        trackIds,
         loadingTodos: false
       })
     } catch (e) {

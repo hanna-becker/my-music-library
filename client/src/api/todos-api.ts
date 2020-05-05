@@ -2,7 +2,6 @@ import { apiEndpoint } from '../config'
 import { Todo } from '../types/Todo'
 import { CreateTodoRequest } from '../types/CreateTodoRequest'
 import Axios from 'axios'
-import { UpdateTodoRequest } from '../types/UpdateTodoRequest'
 import { SearchResult } from '../types/SearchResult'
 
 export async function getTodos(idToken: string): Promise<Todo[]> {
@@ -15,6 +14,17 @@ export async function getTodos(idToken: string): Promise<Todo[]> {
     }
   })
   console.log('Todos:', response.data)
+  return response.data.items
+}
+
+export async function getSongs(idToken: string): Promise<string[]> {
+  console.log('Fetching songs')
+  const response = await Axios.get(`${apiEndpoint}/songs`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    }
+  })
   return response.data.items
 }
 
