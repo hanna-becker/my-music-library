@@ -14,7 +14,7 @@ interface MusicAppProps {
 interface MusicAppState {
   searchResults: SearchResult[]
   addableSearchResults: AddableSearchResult[]
-  trackIds: string[]
+  trackIds: Set<string>
   searchTerm: string
   loadingSongs: boolean
   loadingSearchResults: boolean
@@ -24,7 +24,7 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
   state: MusicAppState = {
     searchResults: [],
     addableSearchResults: [],
-    trackIds: [],
+    trackIds: new Set([]),
     searchTerm: '',
     loadingSongs: true,
     loadingSearchResults: false
@@ -34,7 +34,7 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
     const addableSearchResults = this.state.searchResults.map(result => {
       return {
         ...result,
-        addable: !this.state.trackIds.includes(result.id)
+        addable: ![...this.state.trackIds].includes(result.id)
       }
     })
     this.setState({
@@ -70,7 +70,7 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
     try {
       await deleteSong(this.props.auth.getIdToken(), trackId)
       this.setState({
-        trackIds: this.state.trackIds.filter(id => id != trackId)
+        trackIds: new Set([...this.state.trackIds].filter(id => id != trackId))
       })
       this.setAddableSearchResultsState()
     } catch {
@@ -82,7 +82,7 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
     try {
       const newTrackId: string = await addSong(this.props.auth.getIdToken(), trackId)
       this.setState({
-        trackIds: [...this.state.trackIds, newTrackId]
+        trackIds: new Set([...this.state.trackIds, newTrackId])
       })
       this.setAddableSearchResultsState()
     } catch {
@@ -94,7 +94,7 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
     try {
       const trackIds = await getSongs(this.props.auth.getIdToken())
       this.setState({
-        trackIds,
+        trackIds: new Set(trackIds),
         // TODO: wait for iframes to finish loading before setting this
         loadingSongs: false
       })
@@ -188,7 +188,7 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
   renderSongsList() {
     return (
       <Grid padded>
-        {this.state.trackIds.map((trackId) => {
+        {[...this.state.trackIds].map((trackId) => {
           const songPath = `https://open.spotify.com/embed/track/${trackId}`
           return (
             <Grid.Row key={trackId}>
