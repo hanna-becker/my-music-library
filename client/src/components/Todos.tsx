@@ -71,6 +71,12 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     }
   }
 
+  handleKeyDown = (event: any) => {
+    if (event.key === "Enter") {
+      this.onSubmitSearch(event);
+    }
+  }
+
   onTodoDelete = async (todoId: string) => {
     try {
       await deleteTodo(this.props.auth.getIdToken(), todoId)
@@ -174,6 +180,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
             actionPosition="left"
             placeholder="I'm singing in the rain..."
             onChange={this.handleSearchInputChange}
+            onKeyDown={this.handleKeyDown}
           />
         </Grid.Column>
         <Grid.Column width={16}>
@@ -264,7 +271,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
       <Grid padded>
         {this.state.searchResults.map((searchResult, pos) => {
           return (
-            <Grid.Row>
+            <Grid.Row key={pos}>
               <Grid.Column width={3} verticalAlign="middle">
                 {searchResult.imageUrl && (<Image src={searchResult.imageUrl} size="small" wrapped/>)}
               </Grid.Column>
