@@ -2,7 +2,7 @@ import dateFormat from 'dateformat'
 import { History } from 'history'
 import * as React from 'react'
 import { Button, Divider, Grid, Header, Icon, Image, Input, Loader } from 'semantic-ui-react'
-import { addSong, createTodo, getTodos, searchSong } from '../api/todos-api'
+import { addSong, createTodo, deleteSong, getTodos, searchSong } from '../api/todos-api'
 import Auth from '../auth/Auth'
 import { Todo } from '../types/Todo'
 import { SearchResult } from '../types/SearchResult'
@@ -74,15 +74,14 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   }
 
   onSongDelete = async (trackId: string) => {
-    // TODO: implement
-    // try {
-    //   await deleteTodo(this.props.auth.getIdToken(), trackId)
-    //   this.setState({
-    //     todos: this.state.todos.filter(todo => todo.todoId != trackId)
-    //   })
-    // } catch {
-    //   alert('Todo deletion failed')
-    // }
+    try {
+      await deleteSong(this.props.auth.getIdToken(), trackId)
+      this.setState({
+        trackIds: this.state.trackIds.filter(id => id != trackId)
+      })
+    } catch {
+      alert('Todo deletion failed')
+    }
   }
 
   onSongAdd = async (trackId: string) => {
