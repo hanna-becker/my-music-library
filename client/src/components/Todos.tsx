@@ -72,8 +72,8 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   }
 
   handleKeyDown = (event: any) => {
-    if (event.key === "Enter") {
-      this.onSubmitSearch(event);
+    if (event.key === 'Enter') {
+      this.onSubmitSearch(event)
     }
   }
 
@@ -259,6 +259,10 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
               <Grid.Column width={16}>
                 <Divider/>
               </Grid.Column>
+
+              <iframe src="https://open.spotify.com/embed/track/7yiCeGUDghFoZIBIipI0IZ" width="300" height="80"
+                      frameBorder="0" allow="encrypted-media"/>
+
             </Grid.Row>
           )
         })}
