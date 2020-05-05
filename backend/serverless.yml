@@ -1,5 +1,5 @@
 service:
-  name: todo-app
+  name: music-library
 
 plugins:
   - serverless-webpack
@@ -25,10 +25,7 @@ provider:
   region: ${opt:region, 'eu-central-1'}
 
   environment:
-    TODOS_TABLE: Todos-${self:provider.stage}
     SONGS_TABLE: Songs-${self:provider.stage}
-    IMAGES_S3_BUCKET: serverless-todo-app-hanna-${self:provider.stage}
-    SIGNED_URL_EXPIRATION: 300
     SPOTIFY_API_CLIENT_ID: 24cce64510b14bf3bdc2d68a0f834df8
     SPOTIFY_API_CLIENT_SECRET_ID: SpotifySecret-${self:provider.stage}
     SPOTIFY_API_CLIENT_SECRET_FIELD: spotifySecret
@@ -50,37 +47,13 @@ custom:
     api:
       info:
         version: v1.0.0
-        title: Todo App API
-        description: Serverless application for managing Todo items
+        title: My Music Library API
+        description: Serverless application for creating a personal music library
 
 functions:
 
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
-
-  GetTodos:
-    handler: src/lambda/http/getTodos.handler
-    events:
-      - http:
-          method: get
-          path: todos
-          cors: true
-          authorizer: Auth
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-          - dynamodb:Query
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
-      - Effect: Allow
-        Action:
-          - s3:GetObject
-        Resource: arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*
-      - Effect: Allow
-        Action:
-          - xray:PutTraceSegments
-          - xray:PutTelemetryRecords
-        Resource:
-          - '*'
 
   GetSongs:
     handler: src/lambda/http/getSongs.handler
@@ -102,32 +75,6 @@ functions:
         Resource:
           - '*'
 
-  CreateTodo:
-    handler: src/lambda/http/createTodo.handler
-    events:
-      - http:
-          method: post
-          path: todos
-          cors: true
-          authorizer: Auth
-          request:
-            schema:
-              application/json: ${file(src/requests/create-todo-request.json)}
-          documentation:
-            summary: Create a new Todo item
-            description: Create a new Todo item
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-          - dynamodb:PutItem
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
-      - Effect: Allow
-        Action:
-          - xray:PutTraceSegments
-          - xray:PutTelemetryRecords
-        Resource:
-          - '*'
-
   AddSong:
     handler: src/lambda/http/addSong.handler
     events:
@@ -136,9 +83,9 @@ functions:
           path: songs
           cors: true
           authorizer: Auth
-          #          request:
-          #            schema:
-          #              application/json: ${file(src/requests/create-todo-request.json)}
+          request:
+            schema:
+              application/json: ${file(src/requests/add-song-request.json)}
           documentation:
             summary: Add a song to personal music library
             description: Add a song to personal music library
@@ -147,58 +94,6 @@ functions:
         Action:
           - dynamodb:PutItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.SONGS_TABLE}
-      - Effect: Allow
-        Action:
-          - xray:PutTraceSegments
-          - xray:PutTelemetryRecords
-        Resource:
-          - '*'
-          -
-  UpdateTodo:
-    handler: src/lambda/http/updateTodo.handler
-    events:
-      - http:
-          method: patch
-          path: todos/{todoId}
-          cors: true
-          authorizer: Auth
-          request:
-            schema:
-              application/json: ${file(src/requests/update-todo-request.json)}
-          documentation:
-            summary: Update an existing Todo item
-            description: Update an existing Todo item
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-          - dynamodb:GetItem
-          - dynamodb:UpdateItem
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
-      - Effect: Allow
-        Action:
-          - xray:PutTraceSegments
-          - xray:PutTelemetryRecords
-        Resource:
-          - '*'
-
-  DeleteTodo:
-    handler: src/lambda/http/deleteTodo.handler
-    events:
-      - http:
-          method: delete
-          path: todos/{todoId}
-          cors: true
-          authorizer: Auth
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-          - dynamodb:GetItem
-          - dynamodb:DeleteItem
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
-      - Effect: Allow
-        Action:
-          - s3:DeleteObject
-        Resource: arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
@@ -219,31 +114,6 @@ functions:
         Action:
           - dynamodb:DeleteItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.SONGS_TABLE}
-      - Effect: Allow
-        Action:
-          - xray:PutTraceSegments
-          - xray:PutTelemetryRecords
-        Resource:
-          - '*'
-
-  GenerateUploadUrl:
-    handler: src/lambda/http/generateUploadUrl.handler
-    events:
-      - http:
-          method: post
-          path: todos/{todoId}/attachment
-          cors: true
-          authorizer: Auth
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-          - dynamodb:GetItem
-          - dynamodb:UpdateItem
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
-      - Effect: Allow
-        Action:
-          - s3:PutObject
-        Resource: arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
@@ -292,22 +162,6 @@ resources:
         RestApiId:
           Ref: ApiGatewayRestApi
 
-    TodosDynamoDBTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        AttributeDefinitions:
-          - AttributeName: userId
-            AttributeType: S
-          - AttributeName: todoId
-            AttributeType: S
-        KeySchema:
-          - AttributeName: userId
-            KeyType: HASH
-          - AttributeName: todoId
-            KeyType: RANGE
-        BillingMode: PAY_PER_REQUEST
-        TableName: ${self:provider.environment.TODOS_TABLE}
-
     SongsDynamoDBTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -323,35 +177,6 @@ resources:
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.SONGS_TABLE}
-
-    AttachmentsBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${self:provider.environment.IMAGES_S3_BUCKET}
-        CorsConfiguration:
-          CorsRules:
-            - AllowedOrigins:
-                - '*'
-              AllowedHeaders:
-                - '*'
-              AllowedMethods:
-                - GET
-                - PUT
-              MaxAge: 3000
-
-    BucketPolicy:
-      Type: AWS::S3::BucketPolicy
-      Properties:
-        PolicyDocument:
-          Id: MyPolicy
-          Version: "2012-10-17"
-          Statement:
-            - Sid: PublicReadForGetBucketObjects
-              Effect: Allow
-              Principal: '*'
-              Action: 's3:GetObject'
-              Resource: 'arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*'
-        Bucket: !Ref AttachmentsBucket
 
     KMSKey:
       Type: AWS::KMS::Key
