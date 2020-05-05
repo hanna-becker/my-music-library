@@ -4,6 +4,7 @@ import { createLogger } from '../../utils/logger'
 import SpotifyWebApi from 'spotify-web-api-node'
 
 import * as AWS from 'aws-sdk'
+import { SearchResult } from '../../models/SearchResult'
 // import * as AWSXRay from 'aws-xray-sdk'
 //
 // const XAWS = AWSXRay.captureAWS(AWS);
@@ -41,14 +42,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     const searchResults: SpotifyApi.SearchResponse = searchResponse.body
     const tracks = searchResults.tracks.items
 
-    const minimalTracks = tracks.map((track) => {
+    const minimalTracks: SearchResult[] = tracks.map((track) => {
       const { name, artists, duration_ms, uri, album: { images } } = track
-
-      const artistsNames = artistsFormatterString(artists)
-
-
+      const duration = formatDuration(duration_ms)
+      const artistsNames = formatArtists(artists)
       const imageUrl = retrieveSmallestImageUrl(images)
-      return { name, artists: artistsNames, duration_ms, uri, imageUrl }
+      return { name, artists: artistsNames, duration, uri, imageUrl }
     })
 
     return {
@@ -102,7 +101,25 @@ const retrieveSmallestImageUrl = (images): string => {
   return ''
 }
 
-const artistsFormatterString = (artists: any[]) => {
+const formatArtists = (artists: any[]) => {
   const artistsList = artists.map((artist) => artist.name)
   return artistsList.join(', ')
+}
+
+const formatDuration = (durationMs: number): string => {
+  const seconds = Math.round(durationMs / 1000)
+
+  const displaySeconds = seconds % 60
+  const totalMinutes = (seconds - displaySeconds) / 60
+  const displayMinutes = totalMinutes % 60
+  const displayHours = (totalMinutes - displayMinutes) / 60
+
+  const displaySecondsString = (displaySeconds < 10) ? '0' + displaySeconds : displaySeconds
+
+  if (displayHours > 0) {
+    const displayMinutesString = (displayMinutes < 10) ? '0' + displayMinutes : displayMinutes
+    return displayHours + ':' + displayMinutesString + ':' + displaySecondsString + ' h'
+  }
+
+  return displayMinutes + ':' + displaySecondsString + ' min'
 }

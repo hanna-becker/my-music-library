@@ -265,23 +265,24 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
         {this.state.searchResults.map((searchResult, pos) => {
           return (
             <Grid.Row>
-              <Grid.Column width={1} verticalAlign="middle">
-                <Checkbox
-                  onChange={() => this.onTodoCheck(pos)}
-                  checked={false}
-                />
+              <Grid.Column width={3} verticalAlign="middle">
+                {searchResult.imageUrl && (<Image src={searchResult.imageUrl} size="small" wrapped/>)}
               </Grid.Column>
-              <Grid.Column width={10} verticalAlign="middle">
+              <Grid.Column width={4} verticalAlign="middle">
+                {searchResult.artists}
+              </Grid.Column>
+              <Grid.Column width={4} verticalAlign="middle">
                 {searchResult.name}
               </Grid.Column>
-              <Grid.Column width={3} floated="right">
-                {searchResult.artists}
+              <Grid.Column width={3} verticalAlign="middle" floated="right">
+                {searchResult.duration}
               </Grid.Column>
               <Grid.Column width={1} floated="right">
                 <Button
                   icon
                   color="blue"
-                  onClick={() => {}}
+                  onClick={() => {
+                  }}
                 >
                   <Icon name="pencil"/>
                 </Button>
@@ -290,14 +291,12 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
                 <Button
                   icon
                   color="red"
-                  onClick={() => {}}
+                  onClick={() => {
+                  }}
                 >
                   <Icon name="delete"/>
                 </Button>
               </Grid.Column>
-              {searchResult.imageUrl && (
-                <Image src={searchResult.imageUrl} size="small" wrapped/>
-              )}
               <Grid.Column width={16}>
                 <Divider/>
               </Grid.Column>
