@@ -1,10 +1,8 @@
 import dateFormat from 'dateformat'
 import { History } from 'history'
-import update from 'immutability-helper'
 import * as React from 'react'
-import { Button, Checkbox, Divider, Grid, Header, Icon, Image, Input, Loader } from 'semantic-ui-react'
-
-import { createTodo, deleteTodo, getTodos, patchTodo, searchSong } from '../api/todos-api'
+import { Button, Divider, Grid, Header, Icon, Image, Input, Loader } from 'semantic-ui-react'
+import { createTodo, getTodos, searchSong } from '../api/todos-api'
 import Auth from '../auth/Auth'
 import { Todo } from '../types/Todo'
 import { SearchResult } from '../types/SearchResult'
@@ -17,6 +15,7 @@ interface TodosProps {
 interface TodosState {
   todos: Todo[]
   searchResults: SearchResult[]
+  trackIds: string[]
   newTodoName: string
   searchTerm: string
   loadingTodos: boolean
@@ -27,6 +26,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   state: TodosState = {
     todos: [],
     searchResults: [],
+    trackIds: ['7yiCeGUDghFoZIBIipI0IZ', '0z21vE4xHXXYSyXkOLDUXF', '1vHXhlhCK4pBHSQYFeLvb7'],
     newTodoName: '',
     searchTerm: '',
     loadingTodos: true
@@ -38,10 +38,6 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
 
   handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ searchTerm: event.target.value })
-  }
-
-  onEditButtonClick = (todoId: string) => {
-    this.props.history.push(`/todos/${todoId}/edit`)
   }
 
   onTodoCreate = async (event: React.ChangeEvent<HTMLButtonElement>) => {
@@ -77,33 +73,16 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     }
   }
 
-  onTodoDelete = async (todoId: string) => {
-    try {
-      await deleteTodo(this.props.auth.getIdToken(), todoId)
-      this.setState({
-        todos: this.state.todos.filter(todo => todo.todoId != todoId)
-      })
-    } catch {
-      alert('Todo deletion failed')
-    }
-  }
-
-  onTodoCheck = async (pos: number) => {
-    try {
-      const todo = this.state.todos[pos]
-      await patchTodo(this.props.auth.getIdToken(), todo.todoId, {
-        name: todo.name,
-        dueDate: todo.dueDate,
-        done: !todo.done
-      })
-      this.setState({
-        todos: update(this.state.todos, {
-          [pos]: { done: { $set: !todo.done } }
-        })
-      })
-    } catch {
-      alert('Todo modification failed')
-    }
+  onTrackDelete = async (trackId: string) => {
+    // TODO: implement
+    // try {
+    //   await deleteTodo(this.props.auth.getIdToken(), trackId)
+    //   this.setState({
+    //     todos: this.state.todos.filter(todo => todo.todoId != trackId)
+    //   })
+    // } catch {
+    //   alert('Todo deletion failed')
+    // }
   }
 
   async componentDidMount() {
@@ -195,7 +174,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
       return this.renderLoading()
     }
 
-    return this.renderTodosList()
+    return this.renderTracksList()
   }
 
   renderSearchResults() {
@@ -217,52 +196,24 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     )
   }
 
-  renderTodosList() {
+  renderTracksList() {
     return (
       <Grid padded>
-        {this.state.todos.map((todo, pos) => {
+        {this.state.trackIds.map((trackId, pos) => {
+          const trackPath = `https://open.spotify.com/embed/track/${trackId}`
           return (
-            <Grid.Row key={todo.todoId}>
-              <Grid.Column width={1} verticalAlign="middle">
-                <Checkbox
-                  onChange={() => this.onTodoCheck(pos)}
-                  checked={todo.done}
-                />
+            <Grid.Row key={trackId}>
+              <Grid.Column width={14} verticalAlign="middle">
+                <iframe src={trackPath} width="300" height="80" frameBorder="0" allow="encrypted-media"/>
               </Grid.Column>
-              <Grid.Column width={10} verticalAlign="middle">
-                {todo.name}
-              </Grid.Column>
-              <Grid.Column width={3} floated="right">
-                {todo.dueDate}
-              </Grid.Column>
-              <Grid.Column width={1} floated="right">
-                <Button
-                  icon
-                  color="blue"
-                  onClick={() => this.onEditButtonClick(todo.todoId)}
-                >
-                  <Icon name="pencil"/>
-                </Button>
-              </Grid.Column>
-              <Grid.Column width={1} floated="right">
-                <Button
-                  icon
-                  color="red"
-                  onClick={() => this.onTodoDelete(todo.todoId)}
-                >
+              <Grid.Column width={2} floated="right">
+                <Button icon color="red" onClick={() => this.onTrackDelete(trackId)}>
                   <Icon name="delete"/>
                 </Button>
               </Grid.Column>
-              {todo.attachmentUrl && (
-                <Image src={todo.attachmentUrl} size="small" wrapped/>
-              )}
               <Grid.Column width={16}>
                 <Divider/>
               </Grid.Column>
-
-              <iframe src="https://open.spotify.com/embed/track/7yiCeGUDghFoZIBIipI0IZ" width="300" height="80"
-                      frameBorder="0" allow="encrypted-media"/>
-
             </Grid.Row>
           )
         })}
