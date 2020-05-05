@@ -15,7 +15,6 @@ interface MusicAppProps {
 interface MusicAppState {
   searchResults: SearchResult[]
   addableSearchResults: AddableSearchResult[]
-  trackIds: Set<string>
   librarySongs: Set<LibrarySong>
   searchTerm: string
   loadingSongs: boolean
@@ -26,7 +25,6 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
   state: MusicAppState = {
     searchResults: [],
     addableSearchResults: [],
-    trackIds: new Set([]),
     librarySongs: new Set([]),
     searchTerm: '',
     loadingSongs: true,
@@ -74,7 +72,6 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
     try {
       await deleteSong(this.props.auth.getIdToken(), trackId)
       this.setState({
-        trackIds: new Set([...this.state.trackIds].filter(id => id != trackId)),
         librarySongs: new Set([...this.state.librarySongs].filter(song => song.trackId != trackId))
       })
       this.setAddableSearchResultsState()
@@ -85,10 +82,8 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
 
   onSongAdd = async (trackId: string) => {
     try {
-      const newTrackId: string = await addSong(this.props.auth.getIdToken(), trackId)
       const librarySongs = new Set([...this.state.librarySongs, { trackId, iframeLoaded: false }])
       this.setState({
-        trackIds: new Set([...this.state.trackIds, newTrackId]),
         librarySongs
       })
       this.setAddableSearchResultsState()
@@ -102,7 +97,6 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
       const trackIds = await getSongs(this.props.auth.getIdToken())
       const librarySongs = new Set(trackIds.map(trackId => ({ trackId, iframeLoaded: false })))
       this.setState({
-        trackIds: new Set(trackIds),
         librarySongs
       })
     } catch (e) {
@@ -199,7 +193,7 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
   renderSong(song: LibrarySong) {
     const songPath = `https://open.spotify.com/embed/track/${song.trackId}`
     const iframe = <iframe src={songPath} width="300" height="80" onLoad={() => this.onIframeLoaded(song.trackId)}
-                           allow="encrypted-media"/>
+                           frameBorder="0" allow="encrypted-media"/>
     return (
       <Grid.Row key={song.trackId}>
         <Grid.Column width={14} verticalAlign="middle">
