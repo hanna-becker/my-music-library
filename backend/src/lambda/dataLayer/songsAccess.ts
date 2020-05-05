@@ -1,6 +1,7 @@
 import * as AWS from 'aws-sdk'
-import { DocumentClient } from 'aws-sdk/clients/dynamodb'
+import { DocumentClient, DeleteItemOutput } from 'aws-sdk/clients/dynamodb'
 import { Song } from '../../models/Song'
+import { AWSError } from 'aws-sdk'
 // import * as AWSXRay from 'aws-xray-sdk'
 //
 // const XAWS = AWSXRay.captureAWS(AWS);
@@ -21,7 +22,7 @@ export class SongsAccess {
     return song
   }
 
-  async deleteSong(song: Song): Promise<any> {
+  async deleteSong(song: Song): Promise<DeleteItemOutput | AWSError> {
     const { userId, trackId } = song
     return this.docClient.delete({
       TableName: this.songstable,
