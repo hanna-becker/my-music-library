@@ -35,7 +35,7 @@ provider:
     IS_OFFLINE: true
 
 custom:
-# TODO: uncomment for local execution
+  # TODO: uncomment for local execution
   dynamodb:
     start:
       port: 8000
@@ -136,9 +136,9 @@ functions:
           path: songs
           cors: true
           authorizer: Auth
-#          request:
-#            schema:
-#              application/json: ${file(src/requests/create-todo-request.json)}
+          #          request:
+          #            schema:
+          #              application/json: ${file(src/requests/create-todo-request.json)}
           documentation:
             summary: Add a song to personal music library
             description: Add a song to personal music library
@@ -199,6 +199,26 @@ functions:
         Action:
           - s3:DeleteObject
         Resource: arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
+        Resource:
+          - '*'
+
+  DeleteSong:
+    handler: src/lambda/http/deleteSong.handler
+    events:
+      - http:
+          method: delete
+          path: songs/{trackId}
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.SONGS_TABLE}
       - Effect: Allow
         Action:
           - xray:PutTraceSegments

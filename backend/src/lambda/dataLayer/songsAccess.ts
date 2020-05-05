@@ -21,6 +21,14 @@ export class SongsAccess {
     return song
   }
 
+  async deleteSong(song: Song): Promise<any> {
+    const { userId, trackId } = song
+    return this.docClient.delete({
+      TableName: this.songstable,
+      Key: { userId, trackId }
+    }).promise()
+  }
+
   async getSongsByUser(userId: string): Promise<Song[]> {
     const result = await this.docClient.query({
       TableName: this.songstable,
