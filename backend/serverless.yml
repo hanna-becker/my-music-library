@@ -8,9 +8,8 @@ plugins:
   - serverless-dynamodb-local
   - serverless-offline
 
-# TODO: uncomment after everything else is finished
-#package:
-#  individually: true
+package:
+  individually: true
 
 provider:
 
@@ -29,19 +28,19 @@ provider:
     SPOTIFY_API_CLIENT_ID: 24cce64510b14bf3bdc2d68a0f834df8
     SPOTIFY_API_CLIENT_SECRET_ID: SpotifySecret-${self:provider.stage}
     SPOTIFY_API_CLIENT_SECRET_FIELD: spotifySecret
-    IS_OFFLINE: true
+#    IS_OFFLINE: true
 
 custom:
-  # TODO: uncomment for local execution
-  dynamodb:
-    start:
-      port: 8000
-      inMemory: true
-      migrate: true
-    stages:
-      - dev
-  serverless-offline:
-    httpPort: 3003
+# uncomment for local execution
+#  dynamodb:
+#    start:
+#      port: 8000
+#      inMemory: true
+#      migrate: true
+#    stages:
+#      - dev
+#  serverless-offline:
+#    httpPort: 3003
 
   documentation:
     api:

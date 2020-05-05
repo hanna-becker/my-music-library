@@ -1,7 +1,6 @@
-const apiId = 'sde5ralmqg';
-// TODO: change to non-local version
-// export const apiEndpoint = `https://${apiId}.execute-api.eu-central-1.amazonaws.com/dev`;
-export const apiEndpoint = `http://localhost:3003/dev`;
+const apiId = 'xwipiizasb';
+export const apiEndpoint = `https://${apiId}.execute-api.eu-central-1.amazonaws.com/dev`;
+// export const apiEndpoint = `http://localhost:3003/dev`; // uncomment for local execution
 
 export const authConfig = {
   domain: 'dev-7pwwdtt2.eu.auth0.com',            // Auth0 domain

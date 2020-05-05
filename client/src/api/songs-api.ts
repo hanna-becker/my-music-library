@@ -13,7 +13,6 @@ export async function getSongs(idToken: string): Promise<string[]> {
   return response.data.items
 }
 
-// TODO: prevent adding the same song twice
 export async function addSong(idToken: string, trackId: string): Promise<string> {
   console.log('Adding song')
   const response = await Axios.post(`${apiEndpoint}/songs`, JSON.stringify({ trackId }), {
