@@ -4,6 +4,7 @@ import { Button, Divider, Grid, Header, Icon, Image, Input, Loader } from 'seman
 import { addSong, deleteSong, getSongs, searchSong } from '../api/songs-api'
 import Auth from '../auth/Auth'
 import { SearchResult } from '../types/SearchResult'
+import { AddableSearchResult } from '../types/AddableSearchResult'
 
 interface MusicAppProps {
   auth: Auth
@@ -12,6 +13,7 @@ interface MusicAppProps {
 
 interface MusicAppState {
   searchResults: SearchResult[]
+  addableSearchResults: AddableSearchResult[]
   trackIds: string[]
   searchTerm: string
   loadingSongs: boolean
@@ -21,10 +23,24 @@ interface MusicAppState {
 export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> {
   state: MusicAppState = {
     searchResults: [],
+    addableSearchResults: [],
     trackIds: [],
     searchTerm: '',
     loadingSongs: true,
     loadingSearchResults: false
+  }
+
+  private setAddableSearchResultsState() {
+    const addableSearchResults = this.state.searchResults.map(result => {
+      return {
+        ...result,
+        addable: !this.state.trackIds.includes(result.id)
+      }
+    })
+    this.setState({
+      addableSearchResults,
+      loadingSearchResults: false
+    })
   }
 
   handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,9 +52,9 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
     try {
       const searchResults = await searchSong(this.props.auth.getIdToken(), this.state.searchTerm)
       this.setState({
-        searchResults,
-        loadingSearchResults: false
+        searchResults
       })
+      this.setAddableSearchResultsState()
     } catch {
       alert('Song search failed')
     }
@@ -56,6 +72,7 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
       this.setState({
         trackIds: this.state.trackIds.filter(id => id != trackId)
       })
+      this.setAddableSearchResultsState()
     } catch {
       alert('Song deletion failed')
     }
@@ -67,6 +84,7 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
       this.setState({
         trackIds: [...this.state.trackIds, newTrackId]
       })
+      this.setAddableSearchResultsState()
     } catch {
       alert('Adding song failed')
     }
@@ -195,7 +213,7 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
   renderSearchResultsList() {
     return (
       <Grid padded>
-        {this.state.searchResults.map((searchResult) => {
+        {this.state.addableSearchResults.map((searchResult) => {
           return (
             <Grid.Row key={searchResult.id}>
               <Grid.Column width={3} verticalAlign="middle">
@@ -211,7 +229,8 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
                 {searchResult.duration}
               </Grid.Column>
               <Grid.Column width={2} floated="right">
-                <Button icon color="blue" onClick={() => this.onSongAdd(searchResult.id)}>
+                <Button icon color="blue" disabled={!searchResult.addable}
+                        onClick={() => this.onSongAdd(searchResult.id)}>
                   <Icon name="add"/>
                 </Button>
               </Grid.Column>
