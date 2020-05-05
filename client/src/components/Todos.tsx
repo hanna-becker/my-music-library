@@ -275,7 +275,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
       <Grid padded>
         {this.state.searchResults.map((searchResult, pos) => {
           return (
-            <Grid.Row key={pos}>
+            <Grid.Row key={searchResult.id}>
               <Grid.Column width={3} verticalAlign="middle">
                 {searchResult.imageUrl && (<Image src={searchResult.imageUrl} size="small" wrapped/>)}
               </Grid.Column>

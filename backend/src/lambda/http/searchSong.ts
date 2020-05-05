@@ -43,11 +43,11 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     const tracks = searchResults.tracks.items
 
     const minimalTracks: SearchResult[] = tracks.map((track) => {
-      const { name, artists, duration_ms, uri, album: { images } } = track
+      const { id, name, artists, duration_ms, album: { images } } = track
       const duration = formatDuration(duration_ms)
       const artistsNames = formatArtists(artists)
       const imageUrl = retrieveSmallestImageUrl(images)
-      return { name, artists: artistsNames, duration, uri, imageUrl }
+      return { id, name, artists: artistsNames, duration, imageUrl }
     })
 
     return {
