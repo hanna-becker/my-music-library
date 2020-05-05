@@ -2,7 +2,7 @@ import dateFormat from 'dateformat'
 import { History } from 'history'
 import * as React from 'react'
 import { Button, Divider, Grid, Header, Icon, Image, Input, Loader } from 'semantic-ui-react'
-import { createTodo, getTodos, searchSong } from '../api/todos-api'
+import { addSong, createTodo, getTodos, searchSong } from '../api/todos-api'
 import Auth from '../auth/Auth'
 import { Todo } from '../types/Todo'
 import { SearchResult } from '../types/SearchResult'
@@ -26,7 +26,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   state: TodosState = {
     todos: [],
     searchResults: [],
-    trackIds: ['7yiCeGUDghFoZIBIipI0IZ', '0z21vE4xHXXYSyXkOLDUXF', '1vHXhlhCK4pBHSQYFeLvb7'],
+    trackIds: [],
     newTodoName: '',
     searchTerm: '',
     loadingTodos: true
@@ -83,6 +83,17 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     // } catch {
     //   alert('Todo deletion failed')
     // }
+  }
+
+  onSongAdd = async (trackId: string) => {
+    try {
+      const newTrackId: string = await addSong(this.props.auth.getIdToken(), trackId)
+      this.setState({
+        trackIds: [...this.state.trackIds, newTrackId]
+      })
+    } catch {
+      alert('Adding song failed')
+    }
   }
 
   async componentDidMount() {
@@ -240,12 +251,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
                 {searchResult.duration}
               </Grid.Column>
               <Grid.Column width={2} floated="right">
-                <Button
-                  icon
-                  color="blue"
-                  onClick={() => {
-                  }}
-                >
+                <Button icon color="blue" onClick={() => this.onSongAdd(searchResult.id)}>
                   <Icon name="add"/>
                 </Button>
               </Grid.Column>

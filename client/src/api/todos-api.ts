@@ -31,6 +31,17 @@ export async function createTodo(
   return response.data.item
 }
 
+
+export async function addSong(idToken: string, trackId: string): Promise<string> {
+  const response = await Axios.post(`${apiEndpoint}/songs`, JSON.stringify({ trackId }), {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    }
+  })
+  return response.data.item
+}
+
 export async function searchSong(idToken: string, searchTerm: string): Promise<SearchResult[]> {
   console.log('Searching for songs')
 
