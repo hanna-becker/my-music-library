@@ -18,9 +18,9 @@ interface TodosState {
   trackIds: string[]
   newTodoName: string
   searchTerm: string
-  loadingTodos: boolean
+  loadingSongs: boolean
+  loadingSearchResults: boolean
 }
-
 
 export class Todos extends React.PureComponent<TodosProps, TodosState> {
   state: TodosState = {
@@ -29,7 +29,8 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     trackIds: [],
     newTodoName: '',
     searchTerm: '',
-    loadingTodos: true
+    loadingSongs: true,
+    loadingSearchResults: false
   }
 
   handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,10 +58,12 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   }
 
   onSubmitSearch = async (event: React.ChangeEvent<HTMLButtonElement>) => {
+    this.setState({ loadingSearchResults: true })
     try {
       const searchResults = await searchSong(this.props.auth.getIdToken(), this.state.searchTerm)
       this.setState({
-        searchResults
+        searchResults,
+        loadingSearchResults: false
       })
     } catch {
       alert('Song search failed')
@@ -100,10 +103,10 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
       const trackIds = await getSongs(this.props.auth.getIdToken())
       this.setState({
         trackIds,
-        loadingTodos: false
+        loadingSongs: false
       })
     } catch (e) {
-      alert(`Failed to fetch todos: ${e.message}`)
+      alert(`Failed to fetch songs: ${e.message}`)
     }
   }
 
@@ -180,27 +183,36 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   }
 
   renderTodos() {
-    if (this.state.loadingTodos) {
-      return this.renderLoading()
+    if (this.state.loadingSongs) {
+      return this.renderLoadingSongs()
     }
 
     return this.renderSongsList()
   }
 
   renderSearchResults() {
-    if (this.state.loadingTodos) {
-      // TODO: loading state
-      return this.renderLoading()
+    if (this.state.loadingSearchResults) {
+      return this.renderLoadingSearchResults()
     }
 
     return this.renderSearchResultsList()
   }
 
-  renderLoading() {
+  renderLoadingSongs() {
     return (
       <Grid.Row>
         <Loader indeterminate active inline="centered">
-          Loading TODOs
+          Loading Songs
+        </Loader>
+      </Grid.Row>
+    )
+  }
+
+  renderLoadingSearchResults() {
+    return (
+      <Grid.Row>
+        <Loader indeterminate active inline="centered">
+          Loading Search Results
         </Loader>
       </Grid.Row>
     )
