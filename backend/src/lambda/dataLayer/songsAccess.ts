@@ -1,10 +1,11 @@
 import * as AWS from 'aws-sdk'
-import { DocumentClient, DeleteItemOutput } from 'aws-sdk/clients/dynamodb'
-import { Song } from '../../models/Song'
 import { AWSError } from 'aws-sdk'
-// import * as AWSXRay from 'aws-xray-sdk'
-//
-// const XAWS = AWSXRay.captureAWS(AWS);
+import { DeleteItemOutput, DocumentClient } from 'aws-sdk/clients/dynamodb'
+import { Song } from '../../models/Song'
+import * as AWSXRay from 'aws-xray-sdk'
+
+
+const XAWS = AWSXRay.captureAWS(AWS)
 
 export class SongsAccess {
 
@@ -46,11 +47,11 @@ export class SongsAccess {
 function createDynamoDBClient() {
   if (process.env.IS_OFFLINE) {
     console.log('Creating a local DynamoDB instance')
-    return new AWS.DynamoDB.DocumentClient({
+    return new XAWS.DynamoDB.DocumentClient({
       region: 'localhost',
       endpoint: 'http://localhost:8000'
     })
   }
 
-  return new AWS.DynamoDB.DocumentClient()
+  return new XAWS.DynamoDB.DocumentClient()
 }

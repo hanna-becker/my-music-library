@@ -1,6 +1,9 @@
 import SpotifyWebApi from 'spotify-web-api-node'
 import * as AWS from 'aws-sdk'
 import { createLogger } from '../../utils/logger'
+import * as AWSXRay from 'aws-xray-sdk'
+
+const XAWS = AWSXRay.captureAWS(AWS)
 
 const logger = createLogger('SpotifyApiAccess')
 
@@ -49,7 +52,7 @@ export class SpotifyApiAccess {
 
   private async getSecret(): Promise<any> {
     if (!this.cachedSecret) {
-      const secretsManagerClient = new AWS.SecretsManager()
+      const secretsManagerClient = new XAWS.SecretsManager()
       const data = await secretsManagerClient.getSecretValue({
         SecretId: this.spotifySecretId
       }).promise()
