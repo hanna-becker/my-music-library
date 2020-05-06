@@ -39,10 +39,15 @@ export default class App extends Component<AppProps, AppState> {
         backgroundColor: 'darkslategrey',
         height: '100%'
       }}>
-        <Segment style={{ padding: '8em 0em', backgroundColor: 'darkslategrey', minHeight: '100% !important' }} vertical>
+        <Segment style={{ padding: '4em 0em', backgroundColor: 'darkslategrey', minHeight: '100% !important' }}
+                 vertical>
           <Grid container stackable verticalAlign="middle">
             <Grid.Row>
               <Grid.Column width={16}>
+                <img src={require('./assets/logo_small.png')} alt={'logo'}
+                     style={{ height: '100px', display: 'block', margin: 'auto' }}/>
+              </Grid.Column>
+              <Grid.Column width={16} style={{ padding: '2em 0em'}}>
                 <Router history={this.props.history}>
                   {this.generateMenu()}
 

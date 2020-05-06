@@ -1,6 +1,6 @@
 import { History } from 'history'
 import * as React from 'react'
-import { Button, Divider, Grid, Header, Icon, Image, Input, Loader } from 'semantic-ui-react'
+import { Button, Divider, Grid, Header, Icon, Image, Input, Loader, Segment } from 'semantic-ui-react'
 import { addSong, deleteSong, getSongs, searchSong } from '../api/songs-api'
 import Auth from '../auth/Auth'
 import { SearchResult } from '../types/SearchResult'
@@ -111,7 +111,6 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
         <Grid>
           <Grid.Row>
             <Grid.Column width={10}>
-              <Header as="h1" style={{color: '#21ba45'}}>My Music Library</Header>
               {this.state.loadingSongs ? this.renderLoadingLibrarySongs() : null}
               {this.renderLibrarySongsList()}
             </Grid.Column>
@@ -184,9 +183,12 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
     if ([...this.state.librarySongs].length === 0) {
       this.setState({ loadingSongs: false })
       return (
-        <div>
-          <h3 style={{color: 'darkgray'}}><em>Use the song search to add songs</em></h3>
-        </div>
+        <Segment placeholder>
+          <Header icon>
+            <Icon name='search'/>
+            Use the song search to add songs
+          </Header>
+        </Segment>
       )
     }
     return (
@@ -196,16 +198,14 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
           return (
             <Grid.Column key={song.trackId} width={8}>
               <Grid.Column width={16}>
-                <iframe src={songPath} width="300" height="80" style={{ marginLeft: '9px' }}
-                        onLoad={() => this.onIframeLoaded(song.trackId)}
-                        frameBorder="0" allow="encrypted-media"/>
-                <Button icon fluid attached='bottom' color="black" onClick={() => this.onSongDelete(song.trackId)}>
-                  <Icon name="delete"/>
-                  Remove from Library
-                </Button>
-              </Grid.Column>
-              <Grid.Column width={16}>
-                <Divider/>
+                <Segment placeholder compact>
+                  <iframe src={songPath} width="300" height="80" onLoad={() => this.onIframeLoaded(song.trackId)}
+                          frameBorder="0" allow="encrypted-media"/>
+                  <Button icon fluid attached='bottom' color="black" onClick={() => this.onSongDelete(song.trackId)}>
+                    <Icon name="delete"/>
+                    Remove from Library
+                  </Button>
+                </Segment>
               </Grid.Column>
             </Grid.Column>
           )
@@ -222,9 +222,9 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
 
             <Grid.Row key={searchResult.id}>
               <Grid.Column width={4} verticalAlign="middle">
-                {searchResult.imageUrl && (<Image src={searchResult.imageUrl} size="small" wrapped/>)}
+                {searchResult.imageUrl && (<Image src={searchResult.imageUrl}/>)}
               </Grid.Column>
-              <Grid.Column width={10} verticalAlign="middle">
+              <Grid.Column width={9} verticalAlign="middle">
                 <Grid.Column width={16}>
                   <h4>{searchResult.name}</h4>
                 </Grid.Column>
@@ -235,7 +235,7 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
                   <em>{searchResult.duration}</em>
                 </Grid.Column>
               </Grid.Column>
-              <Grid.Column width={2} floated="right">
+              <Grid.Column width={3}>
                 <Button circular color='green' icon='add' disabled={!searchResult.addable}
                         onClick={() => this.onSongAdd(searchResult.id)}/>
               </Grid.Column>
