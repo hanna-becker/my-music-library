@@ -111,7 +111,7 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
         <Grid>
           <Grid.Row>
             <Grid.Column width={10}>
-              <Header as="h1">My Music Library</Header>
+              <Header as="h1" style={{color: '#21ba45'}}>My Music Library</Header>
               {this.state.loadingSongs ? this.renderLoadingLibrarySongs() : null}
               {this.renderLibrarySongsList()}
             </Grid.Column>
@@ -183,6 +183,11 @@ export class MusicApp extends React.PureComponent<MusicAppProps, MusicAppState> 
   renderLibrarySongsList() {
     if ([...this.state.librarySongs].length === 0) {
       this.setState({ loadingSongs: false })
+      return (
+        <div>
+          <h3 style={{color: 'darkgray'}}><em>Use the song search to add songs</em></h3>
+        </div>
+      )
     }
     return (
       <Grid padded>

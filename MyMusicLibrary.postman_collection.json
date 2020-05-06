@@ -1,12 +1,12 @@
 {
 	"info": {
 		"_postman_id": "ebb3f36e-4ec3-4d62-a741-e123ed34175d",
-		"name": "Udacity Final Project",
+		"name": "MyMusicLibrary",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Music library cloud",
+			"name": "Cloud",
 			"item": [
 				{
 					"name": "Search song",
@@ -177,7 +177,7 @@
 			"protocolProfileBehavior": {}
 		},
 		{
-			"name": "Music library local",
+			"name": "Local",
 			"item": [
 				{
 					"name": "Search song - local",
@@ -360,13 +360,13 @@
 	],
 	"variable": [
 		{
-			"id": "7829bfbc-a39a-483f-8c80-ca36dc6cb0cc",
+			"id": "7c797713-ca10-41f0-8296-a7bb47c5478f",
 			"key": "apiId",
 			"value": "",
 			"type": "string"
 		},
 		{
-			"id": "de27a8e9-d71f-4fd6-a3b4-d6b6e9f2ecf8",
+			"id": "78251ac3-628c-41d7-b712-626290d6a6d1",
 			"key": "authToken",
 			"value": "",
 			"type": "string"
