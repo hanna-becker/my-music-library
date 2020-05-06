@@ -4,10 +4,12 @@ My Music Library is a serverless web application that lets you create your own p
 search through the Spotify API. You can even listen to the songs in your library (if they are available through the 
 Spotify API in your country). 
 
+
 ## Functionality of the application
 
 This application will allow searching the Spotify API for songs and adding them to or removing them from your personal 
 music library. Each user only has access to their own library.
+
 
 ## Implementation
 
@@ -28,3 +30,14 @@ the application can easily and efficiently query the database to retrieve all so
 
 Additionally, I implemented a Postman collection called "MyMusicLibrary.postman_collection.json" for designing and 
 testing the app's REST API.
+
+
+## Setup
+
+After cloning this repo, cd into the client folder, install dependencies with `npm install` and start the client with 
+`npm start`. It will open in a browser on http://localhost:3000. It uses the currently deployed version of the backend. 
+
+If you want to deploy your own serverless backend version, do so by installing serverless, cd into the backend folder, 
+install dependencies with `npm install`, and deploy to the AWS cloud with the command `sls deploy -v`. You will need to 
+register your own application with Spotify and update the client id and secret in the serverless.yml and the AWS Secrets 
+Manager Service, respectively. You will also need to update the API endpoint id in the client's config.ts file. 
