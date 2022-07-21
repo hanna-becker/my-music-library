@@ -20,7 +20,7 @@
     "@types/jsonwebtoken": "^8.3.2",
     "@types/node": "^13.13.4",
     "@types/spotify-web-api-node": "^4.0.1",
-    "aws-sdk": "^2.433.0",
+    "aws-sdk": "^2.814.0",
     "serverless-aws-documentation": "^1.1.0",
     "serverless-dynamodb-local": "^0.2.39",
     "serverless-iam-roles-per-function": "^1.0.4",
